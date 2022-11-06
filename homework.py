@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
@@ -20,6 +24,10 @@ class InfoMessage:
                 f'Дистанция: {self.distance:.3f} км; '
                 f'Ср. скорость: {self.speed:.3f} км/ч; '
                 f'Потрачено ккал: {self.calories:.3f}.')
+    # Никак не могу понять, как вынести сообщение на уровень класса.
+    # Пробовал вынести весь блок кода после return в переменную
+    # MESSAGE, но тогда Python ругается на то, что переменные не
+    # определены.
 
 
 class Training:
@@ -42,21 +50,18 @@ class Training:
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        total_distance = self.action * self.LEN_STEP / self.M_IN_KM
-        return total_distance
+        return self.action * self.LEN_STEP / self.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
-        mean_speed = self.get_distance() / self.duration
-        return mean_speed
+        return self.get_distance() / self.duration
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        pass
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(self.__class__.__name__,
+        return InfoMessage(type(self).__name__,
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
@@ -70,27 +75,12 @@ class Running(Training):
     CALORIES_MEAN_SPEED_MULTIPLIER: int = 18
     CALORIES_MEAN_SPEED_SHIFT: float = 1.79
 
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float
-                 ) -> None:
-        super().__init__(action, duration, weight)
-
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при беге."""
-        calories_mult = self.CALORIES_MEAN_SPEED_MULTIPLIER \
-            * Training.get_mean_speed(self) \
-            + self.CALORIES_MEAN_SPEED_SHIFT
-
-        calories_spent = calories_mult * self.weight / self.M_IN_KM \
-            * self.duration * self.MIN_IN_H
-
-        return calories_spent
-    # тот, кто придумал проверять результат до 14 знака, работает над ПО для
-    # исследования космоса??? Он так же сидит и в формулах математиков
-    # скобки раскрывает? Не дай Бог, пользователю насчитает за месяц лишнюю
-    # калорию, блин...
+        return (self.CALORIES_MEAN_SPEED_MULTIPLIER
+                * Training.get_mean_speed(self)
+                + self.CALORIES_MEAN_SPEED_SHIFT) \
+            * self.weight / self.M_IN_KM * self.duration * self.MIN_IN_H
 
 
 class SportsWalking(Training):
@@ -110,22 +100,11 @@ class SportsWalking(Training):
 
     def get_spent_calories(self):
         """Расчёт количества калорий, израсходованных за тренировку."""
-        speed_in_msec = (self.get_mean_speed() * self.KMH_IN_MSEC)**2
-
-        height_in_meters = self.height / self.CM_IN_M
-
-        speed = speed_in_msec / height_in_meters
-
-        weight_cal_mult = self.CALORIES_WEIGHT_MULTIPLIER * self.weight
-
-        speed_cal_mult = self.CALORIES_SPEED_HEIGHT_MULTIPLIER * self.weight
-
-        return ((weight_cal_mult + speed * speed_cal_mult) * self.duration
-                * self.MIN_IN_H)
-    # тот, кто придумал проверять результат до 14 знака, работает над ПО для
-    # исследования космоса??? Он так же сидит и в формулах математиков
-    # скобки раскрывает? Не дай Бог, пользователю насчитает за месяц лишнюю
-    # калорию, блин...
+        return ((self.CALORIES_WEIGHT_MULTIPLIER * self.weight
+                 + (self.get_mean_speed() * self.KMH_IN_MSEC)**2
+                 / (self.height / self.CM_IN_M)
+                 * self.CALORIES_SPEED_HEIGHT_MULTIPLIER * self.weight)
+                * self.duration * self.MIN_IN_H)
 
 
 class Swimming(Training):
@@ -148,9 +127,8 @@ class Swimming(Training):
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения при плавании."""
-        swimming_mean_speed = (self.length_pool * self.count_pool
-                               / self.M_IN_KM / self.duration)
-        return swimming_mean_speed
+        return self.length_pool * self.count_pool / self.M_IN_KM \
+            / self.duration
 
     def get_spent_calories(self):
         """Расчёт количества калорий, израсходованных за тренировку."""
@@ -158,16 +136,22 @@ class Swimming(Training):
                 + self.CALORIES_MEAN_SPEED_SHIFT)
                 * self.CALORIES_WEIGHT_MULTIPLIER
                 * self.weight * self.duration)
-    # а вот здесь претензий нет, программирование - точная наука!
 
 
-def read_package(workout_type: str, data: list) -> Training:
+def read_package(workout_type: str, data: list[int]) -> Training:
     """Прочитать данные полученные от датчиков."""
     workout_type_dict = {'RUN': Running,
                          'WLK': SportsWalking,
                          'SWM': Swimming}
-    workout: Training = workout_type_dict[workout_type](*data)
-    return workout
+    try:    # Что лучше: try/except или while x in dict?
+        workout: Training = workout_type_dict[workout_type](*data)
+        return workout
+    except AttributeError:
+        print('Что-то пошло не так. Мы работаем над проблемой! (ERR: AE)')
+    except KeyError:
+        print('Что-то пошло не так. Мы работаем над проблемой! (ERR: KE)')
+    except TypeError:
+        print('Что-то пошло не так. Мы работаем над проблемой! (ERR: TE)')
 
 
 def main(training: Training) -> None:
