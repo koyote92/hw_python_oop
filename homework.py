@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import List
 
 
@@ -18,11 +18,7 @@ class InfoMessage:
                     'Потрачено ккал: {calories:.3f}.')
 
     def get_message(self) -> str:
-        return self.MESSAGE.format(training_type=self.training_type,
-                                   duration=self.duration,
-                                   distance=self.distance,
-                                   speed=self.speed,
-                                   calories=self.calories)
+        return self.MESSAGE.format(**asdict(self))
 
 
 class Training:
