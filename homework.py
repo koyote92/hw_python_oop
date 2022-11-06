@@ -143,15 +143,11 @@ def read_package(workout_type: str, data: list[int]) -> Training:
     workout_type_dict = {'RUN': Running,
                          'WLK': SportsWalking,
                          'SWM': Swimming}
-    try:    # Что лучше: try/except или while x in dict?
+    if workout_type in workout_type_dict:
         workout: Training = workout_type_dict[workout_type](*data)
         return workout
-    except AttributeError:
-        print('Что-то пошло не так. Мы работаем над проблемой! (ERR: AE)')
-    except KeyError:
-        print('Что-то пошло не так. Мы работаем над проблемой! (ERR: KE)')
-    except TypeError:
-        print('Что-то пошло не так. Мы работаем над проблемой! (ERR: TE)')
+    else:
+        print('Что-то пошло не так. Мы работаем над проблемой!')
 
 
 def main(training: Training) -> None:
