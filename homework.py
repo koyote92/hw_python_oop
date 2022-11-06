@@ -5,30 +5,39 @@ from typing import List
 @dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
+    training_type: str
+    duration: float
+    distance: float
+    speed: float
+    calories: float
 
-    def __init__(self,
-                 training_type: str,
-                 duration: float,
-                 distance: float,
-                 speed: float,
-                 calories: float
-                 ) -> None:
-        self.training_type = training_type
-        self.duration = duration
-        self.distance = distance
-        self.speed = speed
-        self.calories = calories
+    # MESSAGE: str = ('Тип тренировки: {training_type}; '
+    #                 'Длительность: {duration:.3f} ч.; '
+    #                 'Дистанция: {distance:.3f} км; '
+    #                 'Ср. скорость: {speed:.3f} км/ч; '
+    #                 'Потрачено ккал: {calories:.3f}.')
+    #
+    # def get_message(self,
+    #                 training_type: str,
+    #                 duration: float,
+    #                 distance: float,
+    #                 speed: float,
+    #                 calories: float) -> None:
+    #     return print(self.MESSAGE.format(training_type=training_type,
+    #                                      duration=duration,
+    #                                      distance=distance,
+    #                                      speed=speed,
+    #                                      calories=calories))
 
-    def get_message(self) -> str:
+    # Всё равно не понимаю, как это правильно сделать... остальное вроде всё
+    # исправил. Вылезает ошибка TypeError с пятью отсутствующими аргументами.
+
+    def get_message(self):
         return (f'Тип тренировки: {self.training_type}; '
                 f'Длительность: {self.duration:.3f} ч.; '
                 f'Дистанция: {self.distance:.3f} км; '
                 f'Ср. скорость: {self.speed:.3f} км/ч; '
                 f'Потрачено ккал: {self.calories:.3f}.')
-    # Никак не могу понять, как вынести сообщение на уровень класса.
-    # Пробовал вынести весь блок кода после return в переменную
-    # MESSAGE, но тогда Python ругается на то, что переменные не
-    # определены.
 
 
 class Training:
@@ -78,10 +87,10 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при беге."""
-        return (self.CALORIES_MEAN_SPEED_MULTIPLIER
+        return ((self.CALORIES_MEAN_SPEED_MULTIPLIER
                 * Training.get_mean_speed(self)
-                + self.CALORIES_MEAN_SPEED_SHIFT) \
-            * self.weight / self.M_IN_KM * self.duration * self.MIN_IN_H
+                + self.CALORIES_MEAN_SPEED_SHIFT)
+                * self.weight / self.M_IN_KM * self.duration * self.MIN_IN_H)
 
 
 class SportsWalking(Training):
@@ -128,8 +137,8 @@ class Swimming(Training):
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения при плавании."""
-        return self.length_pool * self.count_pool / self.M_IN_KM \
-            / self.duration
+        return (self.length_pool * self.count_pool / self.M_IN_KM
+                / self.duration)
 
     def get_spent_calories(self):
         """Расчёт количества калорий, израсходованных за тренировку."""
@@ -144,22 +153,11 @@ def read_package(workout_type: str, data: List[int]) -> Training:
     workout_type_dict = {'RUN': Running,
                          'WLK': SportsWalking,
                          'SWM': Swimming}
-    if workout_type in workout_type_dict:
-        workout: Training = workout_type_dict[workout_type](*data)
+    try:
+        workout = workout_type_dict[workout_type](*data)
         return workout
-    else:
-        print('Что-то пошло не так. Мы работаем над проблемой!')
-
-    # Или так?
-    # try:
-    #     workout: Training = workout_type_dict[workout_type](*data)
-    #     return workout
-    # except AttributeError:
-    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: AE')
-    # except KeyError:
-    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: KE')
-    # except TypeError:
-    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: TE')
+    except Exception:
+        raise Exception('Что-то пошло не так. Мы работаем над проблемой!')
 
 
 def main(training: Training) -> None:
