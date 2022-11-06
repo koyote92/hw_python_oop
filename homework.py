@@ -61,8 +61,8 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(type(self).__name__,
-                           self.duration,
+        return InfoMessage(self.__class__.__name__,  # <- Вызывает ошибку теста
+                           self.duration,            # у Яндекса.
                            self.get_distance(),
                            self.get_mean_speed(),
                            self.get_spent_calories()
@@ -148,6 +148,17 @@ def read_package(workout_type: str, data: list[int]) -> Training:
         return workout
     else:
         print('Что-то пошло не так. Мы работаем над проблемой!')
+
+    # Или так?
+    # try:
+    #     workout: Training = workout_type_dict[workout_type](*data)
+    #     return workout
+    # except AttributeError:
+    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: AE')
+    # except KeyError:
+    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: KE')
+    # except TypeError:
+    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: TE')
 
 
 def main(training: Training) -> None:
