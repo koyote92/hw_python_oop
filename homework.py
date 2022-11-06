@@ -11,33 +11,18 @@ class InfoMessage:
     speed: float
     calories: float
 
-    # MESSAGE: str = ('Тип тренировки: {training_type}; '
-    #                 'Длительность: {duration:.3f} ч.; '
-    #                 'Дистанция: {distance:.3f} км; '
-    #                 'Ср. скорость: {speed:.3f} км/ч; '
-    #                 'Потрачено ккал: {calories:.3f}.')
-    #
-    # def get_message(self,
-    #                 training_type: str,
-    #                 duration: float,
-    #                 distance: float,
-    #                 speed: float,
-    #                 calories: float) -> None:
-    #     return print(self.MESSAGE.format(training_type=training_type,
-    #                                      duration=duration,
-    #                                      distance=distance,
-    #                                      speed=speed,
-    #                                      calories=calories))
+    MESSAGE: str = ('Тип тренировки: {training_type}; '
+                    'Длительность: {duration:.3f} ч.; '
+                    'Дистанция: {distance:.3f} км; '
+                    'Ср. скорость: {speed:.3f} км/ч; '
+                    'Потрачено ккал: {calories:.3f}.')
 
-    # Всё равно не понимаю, как это правильно сделать... остальное вроде всё
-    # исправил. Вылезает ошибка TypeError с пятью отсутствующими аргументами.
-
-    def get_message(self):
-        return (f'Тип тренировки: {self.training_type}; '
-                f'Длительность: {self.duration:.3f} ч.; '
-                f'Дистанция: {self.distance:.3f} км; '
-                f'Ср. скорость: {self.speed:.3f} км/ч; '
-                f'Потрачено ккал: {self.calories:.3f}.')
+    def get_message(self) -> str:
+        return self.MESSAGE.format(training_type=self.training_type,
+                                   duration=self.duration,
+                                   distance=self.distance,
+                                   speed=self.speed,
+                                   calories=self.calories)
 
 
 class Training:
@@ -75,7 +60,7 @@ class Training:
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
-                           self.get_spent_calories()
+                           self.get_spent_calories(),
                            )
 
 
@@ -156,8 +141,10 @@ def read_package(workout_type: str, data: List[int]) -> Training:
     try:
         workout = workout_type_dict[workout_type](*data)
         return workout
-    except Exception:
-        raise Exception('Что-то пошло не так. Мы работаем над проблемой!')
+    except KeyError:
+        raise NotImplementedError('Такой вид тренировки ещё не поддерживается')
+    except TypeError:
+        raise TypeError('Недостаточно данных для подсчёта калорий')
 
 
 def main(training: Training) -> None:
