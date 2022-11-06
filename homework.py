@@ -149,6 +149,17 @@ def read_package(workout_type: str, data: list[int]) -> Training:
     else:
         print('Что-то пошло не так. Мы работаем над проблемой!')
 
+    # Или так?
+    # try:
+    #     workout: Training = workout_type_dict[workout_type](*data)
+    #     return workout
+    # except AttributeError:
+    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: AE')
+    # except KeyError:
+    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: KE')
+    # except TypeError:
+    #     print('Что-то пошло не так. Мы работаем над проблемой! (ERR: TE')
+
 
 def main(training: Training) -> None:
     """Главная функция."""
